@@ -1,33 +1,34 @@
 package com.ewikse.hoappj;
 
+import android.databinding.DataBindingUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
+import com.ewikse.hoappj.databinding.CourseRowBinding;
+
+import java.util.Collections;
 import java.util.List;
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
     private List<Course> courses;
 
-    public MyAdapter(List<Course> courses) {
-        this.courses = courses;
+    public MyAdapter() {
+        courses = Collections.emptyList();
     }
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.course_row, parent, false);
-
-        return new MyViewHolder(itemView);
+        CourseRowBinding courseRowBinding =
+                DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                R.layout.course_row, parent, false);
+        return new MyViewHolder(courseRowBinding);
     }
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        Course course = courses.get(position);
-        holder.title.setText(course.getNameCourse());
+        holder.bindCourse(courses.get(position));
     }
 
     @Override
@@ -35,14 +36,26 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         return courses.size();
     }
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title;
+    public void setCourseList(List<Course> courses) {
+        this.courses = courses;
+        notifyDataSetChanged();
+    }
 
-        public MyViewHolder(View view) {
-            super(view);
-            title = view.findViewById(R.id.titleTextView);
-//            genre = (TextView) view.findViewById(R.id.genre);
-//            year = (TextView) view.findViewById(R.id.year);
+    public static class MyViewHolder extends RecyclerView.ViewHolder {
+        CourseRowBinding courseRowBinding;
+
+        public MyViewHolder(CourseRowBinding courseRowBinding) {
+            super(courseRowBinding.itemCourse);
+            this.courseRowBinding = courseRowBinding;
+        }
+
+        public void bindCourse(Course course) {
+            if (courseRowBinding.getCourseViewModel() == null) {
+                courseRowBinding.setCourseViewModel(
+                        new ItemCourseViewModel(course, itemView.getContext()));
+            } else {
+                courseRowBinding.getCourseViewModel().setCourse(course);
+            }
         }
     }
 }
